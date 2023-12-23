@@ -7,10 +7,14 @@
 #include "SystemSims.h"
 
 template<int state_dim, int measure_dim>
-UnscentedKalman<state_dim, measure_dim>::UnscentedKalman(std::function <Eigen::Vector<double, state_dim>(Eigen::Vector<double, state_dim>)> f,
-    std::function <Eigen::Vector<double, measure_dim>(Eigen::Vector<double, measure_dim>)> h,
+UnscentedKalman<state_dim, measure_dim>::UnscentedKalman(
+    std::function <Eigen::Vector<double, state_dim>(Eigen::Vector<double, state_dim>)> f,
+    std::function <Eigen::Vector<double, measure_dim>(Eigen::Vector<double, state_dim>)> h,
     Eigen::Matrix<double, state_dim, state_dim> q,
-    Eigen::Matrix<double, measure_dim, measure_dim> r) : predict_f(f), update_h(h), Q(q), R(r) {};
+    Eigen::Matrix<double, measure_dim, measure_dim> r,
+    Eigen::Vector<double, state_dim> init_state,
+    Eigen::Matrix<double, state_dim, state_dim> init_cov
+    ) : predict_f(f), update_h(h), Q(q), R(r), state_vector(init_state), covariance_matrix(init_cov) {};
 
 
 template<int state_dim, int measure_dim>
@@ -18,18 +22,18 @@ void UnscentedKalman<state_dim, measure_dim>::unscented_transform_f(Eigen::Matri
 {
     for (int i = 0; i < state_dim; ++i)
     {
-        unscented_x_p[i] = weights_m.dot(sigmas.col(i));
+        state_vector_p[i] = weights_m.dot(sigmas.col(i));
     }
     Eigen::Matrix<double, state_dim, state_dim> temp;
     double scalar;
     for (int i = 0; i < sigma_dim; ++i)
     {
-        Eigen::Matrix<double, 1, state_dim> Y = sigmas.row(i) - unscented_x_p.transpose();
+        Eigen::Matrix<double, 1, state_dim> Y = sigmas.row(i) - state_vector_p.transpose();
         scalar = (weights_c[i] * (Y * Y.transpose())[0]);
         temp.fill(scalar);
-        unscented_P_p = (unscented_P_p + temp);
+        covariance_matrix_p += temp;
     }
-    unscented_P_p += Q;
+    covariance_matrix_p += Q;
 }
 
 template<int state_dim, int measure_dim>
@@ -71,8 +75,6 @@ void UnscentedKalman<state_dim, measure_dim>::predict()
         sigma_points_f.row(i) = this->predict_f(sigma_points.row(i));
     }
     this->unscented_transform_f(sigma_points_f);
-    state_vector_p = unscented_x_p;
-    covariance_matrix_p = unscented_P_p;
 }
 
 
@@ -107,19 +109,31 @@ Eigen::Vector<double, 3> func_f(Eigen::Vector<double, 3> item)
 }
 
 
-Eigen::Vector<double, 3> func_h(Eigen::Vector<double, 3> item)
+Eigen::Vector<double, 2> func_h(Eigen::Vector<double, 3> item)
 {
-    return { 1, 2, 3 };
+    return { 1, 2 };
 }
 
-UnscentedKalman<3, 3> filter(func_f, func_h, Eigen::Matrix<double,3,3>::Ones(), Eigen::Matrix<double, 3, 3>::Ones());
+UnscentedKalman<3, 2> filter(func_f, func_h, Eigen::Matrix<double,3,3>::Ones(), Eigen::Matrix<double, 2, 2>::Ones(), Eigen::Vector<double, 3>::Ones(), Eigen::Matrix<double, 3, 3>::Ones());
 
-Eigen::Vector<double, 3> test2 = Eigen::Matrix<double, 1, 3>::Random();
-Eigen::Vector<double, 3> test3 = Eigen::Matrix<double, 1, 3>::Random();
+Eigen::Vector<double, 2> test2 = Eigen::Matrix<double, 1, 2>::Random();
+Eigen::Vector<double, 2> test3 = Eigen::Matrix<double, 1, 2>::Random();
 Eigen::Vector<double, 3> test4 = Eigen::Matrix<double, 1, 3>::Random();
 
 int main()
 {
+    filter.predict();
+    filter.update(test2);
+    std::cout << filter.get_state() << "\n" << filter.get_covar() << '\n';
+    filter.predict();
+    filter.update(test3);
+    std::cout << filter.get_state() << "\n" << filter.get_covar() << '\n';
+    filter.predict();
+    filter.update(test2);
+    std::cout << filter.get_state() << "\n" << filter.get_covar() << '\n';
+    filter.predict();
+    filter.update(test3);
+    std::cout << filter.get_state() << "\n" << filter.get_covar() << '\n';
     filter.predict();
     filter.update(test2);
     std::cout << filter.get_state() << "\n" << filter.get_covar() << '\n';
