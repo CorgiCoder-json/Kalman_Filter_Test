@@ -84,7 +84,7 @@ void UnscentedKalman<state_dim, measure_dim>::update(const Eigen::Vector<double,
         sigma_points_h.row(i) = this->update_h(sigma_points_f.row(i));
     }
     this->unscented_transform_h(sigma_points_h);
-    Eigen::Matrix<double, state_dim, measure_dim> covariance_x_z;
+    Eigen::Matrix<double, state_dim, measure_dim> covariance_x_z = Eigen::Matrix<double, state_dim, measure_dim>::Zero();
     for (int i = 0; i < sigma_dim; ++i)
     {
         auto inner1 = (sigma_points_h.row(i) - unscented_x_z.transpose());
@@ -93,7 +93,8 @@ void UnscentedKalman<state_dim, measure_dim>::update(const Eigen::Vector<double,
         auto temp = weights_c[i] * comp.transpose();
         covariance_x_z += temp;
     }
-    auto K = covariance_x_z * unscented_P_z.inverse();
+    auto P_z_inv = unscented_P_z.colPivHouseholderQr().inverse();
+    auto K = covariance_x_z * P_z_inv;
     state_vector = state_vector_p + K * (measurements - unscented_x_z); 
     covariance_matrix = covariance_matrix_p - (K * unscented_P_z * K.transpose());
 }
@@ -121,8 +122,10 @@ int main()
 {
     filter.predict();
     filter.update(test2);
+    std::cout << filter.get_state() << "\n" << filter.get_covar() << '\n';
     filter.predict();
     filter.update(test3);
+    std::cout << filter.get_state() << "\n" << filter.get_covar() << '\n';
 }
 
 
