@@ -18,7 +18,7 @@ Eigen::Vector2d Radar::noisy_reading(Eigen::Vector2d ac_pos)
 {
 	Eigen::Vector2d read = this->reading(ac_pos);
 	Eigen::Vector2d addend = {dist(gen) * range_std_dev, dist(gen) * elev_angle_std_dev};
-	return addend + read;
+	return (addend + read);
 }
 
 ACSim::ACSim(double pos1, double pos2, Eigen::Vector2d vel, double vel_std)
@@ -28,8 +28,9 @@ ACSim::ACSim(double pos1, double pos2, Eigen::Vector2d vel, double vel_std)
 	this->vel_std_dev = vel_std;
 }
 
-Eigen::Vector2d ACSim::update(double dt) 
+void ACSim::update(double dt) 
 {
-	Eigen::Vector2d dx = velocity * dt;
-	return pos + dx;
+	Eigen::Vector2d add = { (dist(gen) * vel_std_dev) * dt, (dist(gen) * vel_std_dev) * dt };
+	Eigen::Vector2d dx = (velocity * dt) + add;
+	this->pos += dx;
 }

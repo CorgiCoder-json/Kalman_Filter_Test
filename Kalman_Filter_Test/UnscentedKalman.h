@@ -24,24 +24,23 @@ public:
     const Eigen::Matrix<double, state_dim, state_dim> get_covar_p() { return covariance_matrix_p; }
 private:
     static const int sigma_dim = 2 * state_dim + 1;
-    const double kappa = 3 - state_dim;
-    const double alpha = 1;
-    const double beta = 2;
-    const double lambda_ = pow(alpha, 2) * (state_dim - kappa) - state_dim;
+    const double kappa = 0;
+    const double alpha = .1;
+    const double beta = 2.0;
+    const double lambda_ = pow(alpha, 2) * (state_dim + kappa) - state_dim;
     std::function <Eigen::Vector<double, state_dim>(Eigen::Vector<double, state_dim>)> predict_f;
     std::function <Eigen::Vector<double, measure_dim>(Eigen::Vector<double, state_dim>)> update_h;
     Eigen::Matrix<double, 1, sigma_dim> weights_m;
     Eigen::Matrix<double, 1, sigma_dim> weights_c;
-    Eigen::Vector<double, state_dim> state_vector = Eigen::Vector<double, state_dim>::Ones();
-    Eigen::Matrix<double, state_dim, state_dim> covariance_matrix = Eigen::Matrix<double, state_dim, state_dim>::Identity();
-    Eigen::Vector<double, state_dim> state_vector_p = Eigen::Vector<double, state_dim>::Ones();
-    Eigen::Matrix<double, state_dim, state_dim> covariance_matrix_p = Eigen::Matrix<double, state_dim, state_dim>::Ones();
+    Eigen::Vector<double, state_dim> state_vector;
+    Eigen::Matrix<double, state_dim, state_dim> covariance_matrix;
+    Eigen::Vector<double, state_dim> state_vector_p = Eigen::Vector<double, state_dim>::Zero();
+    Eigen::Matrix<double, state_dim, state_dim> covariance_matrix_p = Eigen::Matrix<double, state_dim, state_dim>::Identity();
     Eigen::Matrix<double, sigma_dim, state_dim> sigma_points = Eigen::Matrix<double, sigma_dim, state_dim>::Ones();
     Eigen::Matrix<double, sigma_dim, state_dim> sigma_points_f = Eigen::Matrix<double, sigma_dim, state_dim>::Ones();
     Eigen::Matrix<double, sigma_dim, measure_dim> sigma_points_h = Eigen::Matrix<double, sigma_dim, measure_dim>::Ones();
     Eigen::Vector<double, measure_dim> unscented_x_z = Eigen::Vector<double, measure_dim>::Ones();
-    Eigen::Matrix<double, measure_dim, measure_dim> unscented_P_z = Eigen::Matrix<double, measure_dim, measure_dim>::Ones();
-    Eigen::Vector<double, measure_dim> measure_vector = Eigen::Vector<double, measure_dim>::Ones();
+    Eigen::Matrix<double, measure_dim, measure_dim> unscented_P_z = Eigen::Matrix<double, measure_dim, measure_dim>::Zero();
     Eigen::Matrix<double, state_dim, state_dim> Q;
     Eigen::Matrix<double, measure_dim, measure_dim> R;
 
