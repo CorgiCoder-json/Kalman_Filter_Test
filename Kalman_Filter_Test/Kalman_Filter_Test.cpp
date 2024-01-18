@@ -167,7 +167,7 @@ int main()
 
     UnscentedKalman<3, 2> filter(func_f, func_h, Eigen::Matrix<double, 3, 3>::Zero(), R, x, P);
 
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 1060; i++)
     {
         sim.update(3);
         auto r = radar.noisy_reading(sim.get_pos());
