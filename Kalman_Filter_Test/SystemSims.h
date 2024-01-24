@@ -1,3 +1,13 @@
+//**************************************************************************************************
+//
+// Programmer: Jacob Maurer
+// Date: 1/23/2024
+// Description: System Sim declarations in C++ using Eigen
+//              Implementation I converted from:
+//              https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/10-Unscented-Kalman-Filter.ipynb
+//
+//**************************************************************************************************
+
 #pragma once
 
 #include <Eigen/Dense>
